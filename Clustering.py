@@ -4,49 +4,73 @@ import random
 import matplotlib.pyplot as plt
 
 def main():
+    #get the data in file and save in the list
     numberofk = int(sys.argv[1])
     filename = sys.argv[2]
-    #numberofk = int(input("numer of clusters"))
-    #lfilename = input("the file path of 2d points")
     inputfile = open(filename, "r")
     allpoints = []
     for line in inputfile:
         allpoints.append(line.strip().split(' '))
-    dis = calDistance(allpoints[4], allpoints[6])
+    #random get the k clusters
     clusterid = random.sample(range(0,len(allpoints)), numberofk)
-    #clusterid= [3, 6, 7]
-    #print(clusterid)
+    newclustersPosition = {}
+   
+    thebiggest = [1,2]
     allclusters = {}
- 
-    for i in clusterid:
-
-        allclusters[i] = []
     clusters = {}
-    #print(clusterid)
+    for i in clusterid:
+        allclusters[i] = []
+    
+   
+    
+    
     for j in clusterid:
         clusters[j] = allpoints[j]
     allpoints = [i for j, i in enumerate(allpoints) if j not in clusterid] 
-    for everypoint in allpoints:
-        closestCluster = clusterid[0]
-        smalldistance = calDistance(everypoint, clusters[clusterid[0]])
-        for k in clusters:
-            distance = calDistance(everypoint, clusters[k])
-            if distance < smalldistance:
-                smalldistance = distance
-                closestCluster = k
-        allclusters[closestCluster].append(everypoint)            
-    #print(allclusters)
-    newclustersPosition = {}
-    for eachid in clusterid:
-        if len(allclusters[eachid]) > 0:
-            newclustersPosition[eachid] = findnewposition(allclusters[eachid])
-        else:
-            newclustersPosition[eachid] = clusters[eachid]
-    #print(newclustersPosition)
+    
+    #setup an maximum iterations, if the iterations more than the number. Break.
+    count = 0
+    maxiterations = 30
+    #loop until all the nodes in a cluster doesnot change.
+    while thebiggest[-1] != thebiggest[-2]:
+        count+=1
+        if count >= maxiterations:
+              break    
+        for everypoint in allpoints:
+            closestCluster = clusterid[0]
+            smalldistance = calDistance(everypoint, clusters[clusterid[0]])
+            for k in clusters:
+                distance = calDistance(everypoint, clusters[k])
+                if distance < smalldistance:
+                    smalldistance = distance
+                    closestCluster = k
+            allclusters[closestCluster].append(everypoint)            
+        
+        for eachid in clusterid:
+            if len(allclusters[eachid]) > 0:
+                newPos = findnewposition(allclusters[eachid])
+                newclustersPosition[eachid] = newPos
+                clusters[eachid] = newPos
+            else:
+                newclustersPosition[eachid] = clusters[eachid]
+        
+        thebiggest.append(allclusters.copy())
+        for i in clusterid:
+            allclusters[i] = []
+    
+    
+    
+    
+    allclusters = thebiggest[-1]
+    
+    
+    
+
+    
     color1 = ['bo','go','yo','co','mo','ro','ko','wo']
     color2 = ['bx','gx','yx','cx','mx','rx','kx','wx']
     z = 0
-    #print(newclustersPosition)
+    #draw the graph with different color.
     for eachid in clusterid:
        
         for eachpoint in allclusters[eachid]:
@@ -56,11 +80,11 @@ def main():
     plt.show()
     
     
-    
+#the function to calculate the distance between two points.
 def calDistance(pointA, pointB):
     distance = math.sqrt((float(pointA[0]) - float(pointB[0]))**2+(float(pointA[1])-float(pointB[1]))**2)
     return distance
-
+#the function to find the center of a cluster.
 def findnewposition(listofpoints):
     newX = 0
     newY = 0 
